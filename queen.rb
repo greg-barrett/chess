@@ -1,6 +1,6 @@
 require_relative 'board.rb'
 
-class Queen<Board
+class Queen < Board
   @@quantity=0
   def initialize(board)
     @@quantity+=1
@@ -92,6 +92,9 @@ class Queen<Board
 
   def make_move(move, board)
     if @calculated_moves.include?(move)
+      if board[move]!="   "
+        @caught=board[move]
+      end
       board[@position]="   "
       @position=move
       board[@position]=@piece_symbol
@@ -99,6 +102,11 @@ class Queen<Board
       puts "illegal move"
     end
   end
+
+  def caught
+    @caught
+  end
+
 
 #test method to show where the queen can go
   def map_moves(board)
@@ -108,20 +116,29 @@ class Queen<Board
   end
 
 end
+
+=begin
 #set up board
 board=Board.new
 board.create_board
 #set first queen positions
-queen=Queen.new(board.board)
+queenb=Queen.new(board.board)
+queenw=Queen.new(board.board)
 
 #display state of board
 board.show_board
 
-queen.calculate_moves(queen.position, board.square_numbers, board.board)
+queenb.calculate_moves(queenb.position, board.square_numbers, board.board)
 
-queen.make_move(25, board.board)
+queenb.make_move(7, board.board)
 board.show_board
 
-queen.calculate_moves(queen.position, board.square_numbers, board.board)
-queen.make_move(35, board.board)
+queenw.calculate_moves(queenw.position, board.square_numbers, board.board)
+queenw.make_move(77, board.board)
 board.show_board
+
+queenw.calculate_moves(queenw.position, board.square_numbers, board.board)
+queenw.make_move(7, board.board)
+board.show_board
+puts queenw.caught
+=end

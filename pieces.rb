@@ -1,17 +1,11 @@
-require_relative 'board.rb'
-#require_relative 'player.rb'
+
 class Pieces
-  attr_accessor :starting_position
-
-  def name
-    @name
-  end
-
+  attr_accessor :current_location, :name
   def character
     @character
   end
-
 end
+
 class Rook<Pieces
   @@rooks=0
   def initialize
@@ -21,20 +15,20 @@ class Rook<Pieces
 
   def set_starting_location
     if @@rooks==1
-      @starting_position=0
-      @name="w_rook_l"
+      @current_location=0
+      @name="Rook #{@current_location}"
       @character=" wR"
     elsif @@rooks==2
-      @starting_position=7
-      @name="w_rook_r"
+      @current_location=7
+      @name="Rook #{@current_location}"
       @character=" wR"
     elsif @@rooks==3
-      @starting_position=70
-      @name="b_rook_l"
+      @current_location=70
+      @name="Rook #{@current_location}"
       @character=" bR"
     else
-      @starting_position=77
-      @name="b_rook_r"
+      @current_location=77
+      @name="Rook #{@current_location}"
       @character=" bR"
     end
   end
@@ -48,21 +42,21 @@ class Knight<Pieces
   end
   def set_starting_location
     if @@knights==1
-      @starting_position=01
-      @name="w_knight_l"
-      @character=" wK"
+      @current_location=01
+      @name="Knight #{@current_location}"
+      @character=" wN"
     elsif @@knights==2
-      @starting_position=6
-      @name="w_knight_r"
-      @character=" wK"
+      @current_location=6
+      @name="Knight #{@current_location}"
+      @character=" wN"
     elsif @@knights==3
-      @starting_position=71
-      @name="b_knight_l"
-      @character=" bK"
+      @current_location=71
+      @name="Knight #{@current_location}"
+      @character=" bN"
     else
-      @starting_position=76
-      @name="b_knight_r"
-      @character=" bK"
+      @current_location=76
+      @name="Knight #{@current_location}"
+      @character=" bN"
     end
   end
 end
@@ -76,82 +70,208 @@ class Bishop<Pieces
 
   def set_starting_location
     if @@bishops==1
-      @starting_position=02
-      @name="w_bishop_l"
+      @current_location=02
+      @name="Bishop #{@current_location}"
       @character=" wB"
     elsif @@bishops==2
-      @starting_position=5
-      @name="w_bishop_r"
+      @current_location=5
+      @name="Bishop #{@current_location}"
       @character=" wB"
     elsif @@bishops==3
-      @starting_position=72
-      @name="b_bishop_l"
+      @current_location=72
+      @name="Bishop #{@current_location}"
       @character=" bB"
     else
-      @starting_position=75
-      @name="b_bishop_r"
+      @current_location=75
+      @name="Bishop #{@current_location}"
       @character=" bB"
     end
   end
 end
 
 class Queen<Pieces
-  @@queen=0
+  @@queens=0
 
   def initialize
-    @@queen+=1
+    @@queens+=1
     self.set_starting_location
+
+    @moves_ri=[1, 2, 3, 4, 5, 6, 7]
+    @moves_le=[-1,-2,-3,-4,-5,-6,-7]
+    @moves_up=[10, 20, 30, 40, 50, 60, 70]
+    @moves_do=[-10, -20, -30, -40, -50, -60, -70]
+    @moves_di_up_ri=[11,22,33,44,55,66,77]
+    @moves_di_up_le=[9, 18, 27, 36, 45, 54, 63]
+    @moves_di_do_ri=[-9, -18, -27, -36, -45, -54, -63]
+    @moves_di_do_le=[-11,-22,-33,-44,-55,-66,-77]
   end
 
   def set_starting_location
-    if @@queen==1
-      @starting_position=03
-      @name="w_queen"
+    if @@queens==1
+      @current_location=03
+      @name="Queen #{@current_location}"
       @character=" wQ"
     else
-      @starting_position=73
-      @name="b_queen"
+      @current_location=73
+      @name="Queen #{@current_location}"
       @character=" bQ"
     end
   end
+
+  def calculate_moves(board)
+    start_position=self.current_location
+    return unless (0..77).include?(start_position)
+    @calculated_moves=[]
+    @moves_ri.each do |m|
+      landing=m+start_position
+      break if !(0..77).include?(landing)
+      @calculated_moves<<landing
+      break if board[landing]!="   "
+      end
+    @moves_le.each do |m|
+      landing=m+start_position
+      break if !(0..77).include?(landing)
+      @calculated_moves<<landing
+      break if board[landing]!="   "
+      end
+    @moves_up.each do |m|
+      landing=m+start_position
+      break if !(0..77).include?(landing)
+      @calculated_moves<<landing
+      break if board[landing]!="   "
+      end
+    @moves_do.each do |m|
+      landing=m+start_position
+      break if !(0..77).include?(landing)
+      @calculated_moves<<landing
+      break if board[landing]!="   "
+      end
+    @moves_di_up_ri.each do |m|
+      landing=m+start_position
+      break if !(0..77).include?(landing)
+      @calculated_moves<<landing
+      break if board[landing]!="   "
+      end
+    @moves_di_up_le.each do |m|
+      landing=m+start_position
+      break if !(0..77).include?(landing)
+      @calculated_moves<<landing
+      break if board[landing]!="   "
+      end
+    @moves_di_do_ri.each do |m|
+      landing=m+start_position
+      break if !(0..77).include?(landing)
+      @calculated_moves<<landing
+      break if board[landing]!="   "
+      end
+    @moves_di_do_le.each do |m|
+      landing=m+start_position
+      break if !(0..77).include?(landing)
+      @calculated_moves<<landing
+      break if board[landing]!="   "
+      end
+  end
+
+  def calculated_moves
+    @calculated_moves
+  end
+
+
+
 end
 
+
 class King<Pieces
-  @@king=0
+  @@kings=0
   def initialize
-    @@king+=1
+    @@kings+=1
     self.set_starting_location
   end
 
   def set_starting_location
-    if @@king==1
-      @starting_position=04
-      @name="w_king"
+    if @@kings==1
+      @current_location=04
+      @name="King #{@current_location}"
       @character=" wK"
     else
-      @starting_position=74
-      @name="b_king"
+      @current_location=74
+      @name="King #{@current_location}"
       @character=" bK"
     end
   end
 end
 
 class Pawn<Pieces
-  @@pawn=0
+  @@pawns=0
   def initialize
-    @@pawn+=1
+    @@pawns+=1
     self.set_starting_location
+    @plays=1
+
+
+    @moves_up=[10, 20]
+    @moves_do=[-10, -20]
+    @moves_di_up_ri=[11]
+    @moves_di_up_le=[9]
+    @moves_di_do_ri=[-9]
+    @moves_di_do_le=[-11]
   end
-#uses pawn number to set location of white and black pawns
   def set_starting_location
-    if (1..8).include?(@@pawn)
-      @starting_position=@@pawn+9
-      @name="w_Pawn"
+    if (1..8).include?(@@pawns)
+      @current_location=@@pawns+9
+      @name="Pawn #{@current_location}"
       @character=" wP"
-    elsif (9..16).include?(@@pawn)
-        @starting_position=@@pawn+51
-        @name="b_Pawn"
+    elsif (9..16).include?(@@pawns)
+        @current_location=@@pawns+51
+        @name="Pawn #{@current_location}"
         @character=" bP"
     end
+  end
+
+  def calculate_moves(board)
+    start_position=self.current_location
+    return unless (0..77).include?(start_position)
+    @calculated_moves=[]
+  #I am here trying to figue out what moves  a pwan can make
+    @moves_up.each do |m|
+      landing=m+start_position
+      break if !(0..77).include?(landing)
+      @calculated_moves<<landing
+      break if board[landing]!="   "
+      end
+    @moves_do.each do |m|
+      landing=m+start_position
+      break if !(0..77).include?(landing)
+      @calculated_moves<<landing
+      break if board[landing]!="   "
+      end
+    @moves_di_up_ri.each do |m|
+      landing=m+start_position
+      break if !(0..77).include?(landing)
+      @calculated_moves<<landing
+      break if board[landing]!="   "
+      end
+    @moves_di_up_le.each do |m|
+      landing=m+start_position
+      break if !(0..77).include?(landing)
+      @calculated_moves<<landing
+      break if board[landing]!="   "
+      end
+    @moves_di_do_ri.each do |m|
+      landing=m+start_position
+      break if !(0..77).include?(landing)
+      @calculated_moves<<landing
+      break if board[landing]!="   "
+      end
+    @moves_di_do_le.each do |m|
+      landing=m+start_position
+      break if !(0..77).include?(landing)
+      @calculated_moves<<landing
+      break if board[landing]!="   "
+      end
+  end
+
+  def calculated_moves
+    @calculated_moves
   end
 end

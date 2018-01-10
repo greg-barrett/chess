@@ -1,13 +1,11 @@
-require_relative 'board.rb'
-require_relative 'pieces.rb'
 class Player
-  attr_accessor :name, :colour
+  attr_accessor :name, :queen
   @@players=0
+  @@all_pieces=[]
 #creating a new player also triggers the making of the pieces
   def initialize(name)
     @name=name
     @@players+=1
-    self.set_colour
     @pieces=[]
     self.make_pieces
   end
@@ -22,31 +20,13 @@ class Player
     @pieces<<@knight_r=Knight.new
     @pieces<<@rook_r=Rook.new
     8.times {@pieces<<@pawn=Pawn.new}
-  end
-#show pices
-  def pieces
     @pieces.each do |x|
-    puts  x.name
-    puts  x.starting_position
-    puts  x.character
+      @@all_pieces<<x
     end
   end
 
-#sets player colour
-  def set_colour
-    if @@players==1
-      @colour="White"
-    else
-      @colour="Black"
-    end
+  def Player.all_pieces
+    @@all_pieces
   end
 
 end
-
-a=Player.new("Greg")
-b=Player.new("Adam")
-puts a.name
-a.pieces
-
-puts b.name
-b.pieces

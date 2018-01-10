@@ -9,16 +9,23 @@ class Board
           50, 51, 52, 53, 54, 55, 56, 57,
           60, 61, 62, 63, 64, 65, 66, 67,
           70, 71, 72, 73, 74, 75, 76, 77]
-  end
-
-  def square_numbers
-    @square_numbers
+    self.create_board
+    self.update_board(Player.all_pieces)
   end
 
   def create_board
     @board=Hash.new
     @square_numbers.each do |x|
       @board[x]="   "
+    end
+  end
+
+  def update_board(pieces)
+    @board.each do |k, v,|
+      @board[k]="   "
+    end
+    pieces.each do |piece|
+      @board[piece.current_location]=piece.character
     end
   end
 
@@ -53,4 +60,5 @@ class Board
     puts "   _______________________________"
     puts "    0   1   2   3   4   5   6   7"
   end
+
 end

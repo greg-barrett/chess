@@ -1,89 +1,113 @@
 require_relative 'board.rb'
 require_relative 'pieces.rb'
 require_relative 'player.rb'
-=begin
-#male player and pieces
-a=Player.new("Greg")
-b=Player.new("Adam")
-puts a.name
-puts b.name
-puts ""
-#make board class, make acutal board, show board
-board=Board.new
-board.create_board
-board.update_board(Player.all_pieces)
-board.show_board
-a.move_piece("Pawn 10", 20)
-board.update_board(Player.all_pieces)
-board.show_board
-puts ""
-=end
 class Game
-  attr_accessor :white, :black, :board, :caught
+  attr_accessor :white, :black, :turns, :board, :caught, :piece_in_play, :last_played_piece
   def initialize
     @white=Player.new("Greg")
     @black=Player.new("Adam")
-    puts @white.name
-    puts @black.name
-    puts ""
+    @turns=0
     #make board class, make acutal board, show board
     @board=Board.new
     @caught=[]
+    @last_played_piece=nil
+  end
+#each time called changes player to oposite by increasing turns
+  def current_player
+    if @turns%2==0
+      @white
+    else
+      @black
+    end
   end
 #takes user input and formats it, then calls the move method
   def configure_input(move)
     move=move.split(" to ")
     @piece=move[0].capitalize
     @new_location=move[1].to_i
-    self.move_piece(@piece, @new_location)
+    #self.move_piece(@piece, @new_location)
   end
-#move method called by emthod above to change location of piece
-#first collects all pieces from @@pieces, then when it finds the name of the piece
-#and that the move the player wants to do is legal it goes on to the second if
-#second if checks if there is already something in the new location
-#if yes we iterate through @@pieces again to find the piece with
-#the same character. When found
-#then we change location to "caught and remove location from the name of the caught piece"
-#then we add the piece to the caught array and delete it from @@pieces
-#then we change the location of the piece in play
-#then we change the name of the piece to its new name(with square number)
-#done!
-  def move_piece(piece_name, new_location)
-    Player.all_pieces.each do |x|
-      if x.name == piece_name && x.calculated_moves.include?(new_location)
-        if @board.board[new_location.to_i]!="   "
-          Player.all_pieces.each do |v|
-            if v.character==@board.board[new_location.to_i]
-              v.current_location="caught"
-              v.name=v.name[0..-3]
-              @caught<< v
-              Player.all_pieces.delete(v)
-            end
+
+  def move_piece(piece_instance, new_location)
+    if piece_instance.calculated_moves.include?(new_location)
+      if @board.board[new_location]!="   "
+        Player.all_pieces.each do |v|
+          if v.character==@board.board[new_location.to_i] && v.name.include?(new_location.to_s)
+            v.current_location="caught"
+            v.name=v.name[0..-3]
+            @caught<< v
+            Player.all_pieces.delete(v)
           end
         end
-        old_location =x.current_location
-        x.current_location=new_location
-        x.name=x.name.gsub!(/\d+/, new_location.to_s)
-        puts x.name
-      else
-        puts "invlaid move"
       end
+      piece_instance.last_location=piece_instance.current_location
+      piece_instance.current_location=new_location
+      piece_instance.name=piece_instance.name.gsub!(/\d+/, new_location.to_s)
+      @turns+=1
+      @ok=true
+      @last_played_piece=piece_instance
+  elsif piece_instance.en_passant.include?(new_location)
+    Player.all_pieces.each do |v|
+      if v.current_location== piece_instance.current_location+1
+        v.current_location="caught"
+        v.name=v.name[0..-3]
+        @caught<< v
+        Player.all_pieces.delete(v)
+      end
+    end
+    piece_instance.last_location=piece_instance.current_location
+    piece_instance.current_location=new_location
+    piece_instance.name=piece_instance.name.gsub!(/\d+/, new_location.to_s)
+    @turns+=1
+    @ok=true
+    @last_played_piece=piece_instance
+  else
+    puts "Illegal move"
+    @ok=false
     end
   end
 
+  def set_piece_in_play(piece_name)
+    if current_player==@white
+      @white.pieces.each do |instance|
+        if instance.name==piece_name
+          @piece_in_play=instance
+        end
+      end
+    else
+      if current_player==@black
+      @black.pieces.each do |instance|
+        if instance.name==piece_name
+          @piece_in_play=instance
+        end
+      end
+    end
+  end
+end
+
+  def play
+    input=""
+    until input=="quit"
+    #puts "hi"
+    self.board.show_board
+    puts "#{self.current_player.name} plaese take your turn"
+    #puts "eg Pawn 10 to 30"
+    input=gets.chomp!
+
+    break if input =="quit"
+    self.configure_input(input)
+    self.set_piece_in_play(@piece)
+    self.piece_in_play.calculate_moves(self.board.board)
+    puts self.piece_in_play.calculated_moves
+    self.piece_in_play.en_passant?(self.board.board, Player.all_pieces, self.last_played_piece)
+
+    self.move_piece(@piece_in_play, @new_location)
+    redo if @ok==false
+    self.board.update_board(Player.all_pieces)
+    self.board.show_board
+    end
+  end
 end
 
 game=Game.new
-
-game.board.show_board
-#game.move_piece("Pawn 10", 20)
-game.board.update_board(Player.all_pieces)
-game.board.show_board
-#game.configure_input(move=gets.chomp)
-#game.board.update_board(Player.all_pieces)
-#game.board.show_board
-game.black.queen.calculate_moves(game.board.board)
-puts game.black.queen.calculated_moves
-game.move_piece("Queen 73", 74)
-game.board.update_board(Player.all_pieces)
-game.board.show_board
+game.play

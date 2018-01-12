@@ -1,5 +1,5 @@
 class Player
-  attr_accessor :name, :queen
+  attr_accessor :name, :queen, :colour
   @@players=0
   @@all_pieces=[]
 #creating a new player also triggers the making of the pieces
@@ -8,6 +8,7 @@ class Player
     @@players+=1
     @pieces=[]
     self.make_pieces
+    self.set_colour
   end
 #creates the pieces for the board
   def make_pieces
@@ -25,8 +26,20 @@ class Player
     end
   end
 
+  def pieces
+    @pieces
+  end
+
   def Player.all_pieces
     @@all_pieces
+  end
+
+  def set_colour
+    if @@players==1
+      @colour="White"
+    else
+      @colour="Black"
+    end
   end
 
 end

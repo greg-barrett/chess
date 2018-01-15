@@ -34,10 +34,11 @@ class Board
   end
 #this method fills a few squares
 # she can enter a ful square but not pass it
-  def test_hash(full)
-    full.each do |z|
-      @board[z]=" F "
-    end
+  def test_hash
+      @board[1]="   "
+      @board[2]="   "
+      @board[3]="   "
+  
   end
 
   def show_board

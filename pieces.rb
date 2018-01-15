@@ -15,12 +15,12 @@ class Pieces
 end
 
 class Rook<Pieces
-  attr_accessor :colour
+  attr_accessor :colour, :moved
   @@rooks=0
   def initialize
     @@rooks+=1
     self.set_starting_location
-
+    @moved=0
     @moves_ri=[1, 2, 3, 4, 5, 6, 7]
     @moves_le=[-1,-2,-3,-4,-5,-6,-7]
     @moves_up=[10, 20, 30, 40, 50, 60, 70]
@@ -354,10 +354,13 @@ class Queen<Pieces
 end
 
 class King<Pieces
+  attr_accessor :moved, :castle
   @@kings=0
   def initialize
     @@kings+=1
     self.set_starting_location
+    @moved=0
+    @castle=[]
 
     @moves_ri=[1]
     @moves_le=[-1]
@@ -367,6 +370,7 @@ class King<Pieces
     @moves_di_up_le=[9]
     @moves_di_do_ri=[-9]
     @moves_di_do_le=[-11]
+
   end
 
   def set_starting_location
@@ -436,8 +440,102 @@ class King<Pieces
   end
 
   def calculated_moves
-    @calculated_moves
+     @calculated_moves
   end
+
+  def castling?(board, all_pieces, new_location)
+    #add move to possible moves array
+    unless @castle.length==0
+      @castle.clear
+    end
+    if self.never_moved? == true && self.check? == false && self.relevant_sqs_empty?(board, new_location) == true && self.sqs_not_under_attack?(all_pieces, new_location, board) == true  && self.rook_moved?(all_pieces, new_location) == false
+        @castle<<new_location
+        @castle
+    end
+  end
+
+def rook_moved?(all_pieces, new_location)
+  if self.current_location==4 && new_location > 4
+    all_pieces.each do |piece|
+      if piece.current_location==7 && piece.moved==0
+        return false
+      end
+    end
+  elsif self.current_location==4 && new_location < 4
+    all_pieces.each do |piece|
+      if piece.current_location==0 && piece.moved==0
+
+        return false
+      end
+    end
+  elsif self.current_location==74 && new_location > 74
+    all_pieces.each do |piece|
+      if piece.current_location==77 && piece.moved==0
+        return false
+      end
+    end
+  elsif self.current_location==74 && new_location < 74
+    all_pieces.each do |piece|
+      if piece.current_location==70 && piece.moved==0
+        return false
+      end
+    end
+  else
+    true
+  end
+end
+
+def check?
+  false
+end
+
+def never_moved?
+  if self.moved==0
+    true
+  else
+    false
+  end
+end
+
+def relevant_sqs_empty?(board, new_location)
+  if new_location > self.current_location
+    if board[new_location-1]=="   " && board[new_location]=="   "
+      true
+    else
+      false
+    end
+  else
+    if board[new_location-1]=="   " && board[new_location+1]=="   " && board[new_location]== "   "
+      true
+    else
+      false
+    end
+  end
+end
+
+def sqs_not_under_attack?(all_pieces, new_location, board)
+  @under_attack=[]
+  all_pieces.each do |piece|
+      break if piece.character==self.character
+    piece.calculate_moves(board)
+    @under_attack<<piece.calculated_moves
+    end
+  if new_location> self.current_location
+    if @under_attack.include?(new_location) || @under_attack.include?(new_location-1)
+      false
+    else
+      true
+    end
+  else # if new_location < self.current_location
+    if @under_attack.include?(new_location) || @under_attack.include?(new_location+1)
+      false
+    else
+      true
+    end
+  end
+end
+
+
 end
 
 class Pawn<Pieces
@@ -488,76 +586,74 @@ class Pawn<Pieces
           break if !@@square_numbers.include?(landing)
           break if board[landing]!="   "
           break if board[landing-10]!="   "
-          break if board[landing].include?("w")
+          #break if board[landing].include?("w")
           @calculated_moves<<landing
         end
       end
-      if
-        @moves_up.each do |m|
-          landing=m+start_position
-          break if !@@square_numbers.include?(landing)
-          break if board[landing]!="   "
-          break if board[landing].include?("w")
-          @calculated_moves<<landing
-        end
-        @moves_di_up_ri.each do |m|
-          landing=m+start_position
-          break if !@@square_numbers.include?(landing)
-          break if board[landing]=="   "
-          break if board[landing].include?("w")
-          @calculated_moves<<landing
-        end
-        @moves_di_up_le.each do |m|
-          landing=m+start_position
-          break if !@@square_numbers.include?(landing)
-          break if board[landing]=="   "
-          break if board[landing].include?("w")
-          @calculated_moves<<landing
-        end
+      @moves_up.each do |m|
+        landing=m+start_position
+        break if !@@square_numbers.include?(landing)
+        break if board[landing]!="   "
+        break if board[landing].include?("w")
+        @calculated_moves<<landing
       end
-      else#if piece is black
+      @moves_di_up_ri.each do |m|
+        landing=m+start_position
+        break if !@@square_numbers.include?(landing)
+        break if board[landing]=="   "
+        break if board[landing].include?("w")
+        @calculated_moves<<landing
+      end
+      @moves_di_up_le.each do |m|
+        landing=m+start_position
+        break if !@@square_numbers.include?(landing)
+        break if board[landing]=="   "
+        break if board[landing].include?("w")
+        @calculated_moves<<landing
+      end
+    else#if piece is black
         if @first_location==@current_location
-          @first_move_down.each do |m|
+            @first_move_down.each do |m|
             landing=m+start_position
-            break if !@@square_numbers.include?(landing)
             break if board[landing]!="   "
-            break if board[landing-10]!="   "
-            break if board[landing].include?("b")
+            break if board[landing+10]!="   "
             @calculated_moves<<landing
           end
         end
-        if
-          @moves_do.each do |m|
-            landing=m+start_position
-            break if !@@square_numbers.include?(landing)
-            break if board[landing]!="   "
-            break if board[landing].include?("b")
-            @calculated_moves<<landing
-          end
-          @moves_di_do_ri.each do |m|
-            landing=m+start_position
-            break if !@@square_numbers.include?(landing)
-            break if board[landing]=="   "
-            break if board[landing].include?("b")
-            @calculated_moves<<landing
-          end
-          @moves_di_do_le.each do |m|
-            landing=m+start_position
-            break if !@@square_numbers.include?(landing)
-            break if board[landing]=="   "
-            break if board[landing].include?("b")
-            @calculated_moves<<landing
-          end
-        end
-      end
 
+      @moves_do.each do |m|
+        landing=m+start_position
+        break if !@@square_numbers.include?(landing)
+        break if board[landing]!="   "
+        break if board[landing].include?("b")
+        @calculated_moves<<landing
+      end
+      @moves_di_do_ri.each do |m|
+        landing=m+start_position
+        break if !@@square_numbers.include?(landing)
+        break if board[landing]=="   "
+        break if board[landing].include?("b")
+        @calculated_moves<<landing
+      end
+      @moves_di_do_le.each do |m|
+        landing=m+start_position
+        break if !@@square_numbers.include?(landing)
+        break if board[landing]=="   "
+        break if board[landing].include?("b")
+        @calculated_moves<<landing
+      end
     end
+
+  end
 
   def calculated_moves
     @calculated_moves
   end
 
   def en_passant?(board, all_pieces, last_played_piece)
+    unless @en_passant.length==0
+      @en_passant.clear
+    end
     position=self.current_location
     if self.colour=="Black"
       if board[position-9]=="   " && board[position+1]==" wP"

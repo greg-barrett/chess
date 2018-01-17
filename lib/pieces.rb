@@ -472,7 +472,7 @@ class King<Pieces
     end
   end
 
-def rook_moved?(all_pieces, new_location)
+  def rook_moved?(all_pieces, new_location)
   if self.current_location==4 && new_location > 4
     all_pieces.each do |piece|
       if piece.current_location==7 && piece.moved==0
@@ -503,7 +503,7 @@ def rook_moved?(all_pieces, new_location)
   end
 end
 
-def never_moved?
+  def never_moved?
   if self.moved==0
     true
   else
@@ -511,7 +511,7 @@ def never_moved?
   end
 end
 
-def relevant_sqs_empty?(board, new_location)
+  def relevant_sqs_empty?(board, new_location)
   if new_location > self.current_location
     if board[new_location-1]=="   " && board[new_location]=="   "
       true
@@ -527,7 +527,7 @@ def relevant_sqs_empty?(board, new_location)
   end
 end
 
-def sqs_not_under_attack?(all_pieces, new_location, board)
+  def sqs_not_under_attack?(all_pieces, new_location, board)
   @under_attack=[]
   all_pieces.each do |piece|
       break if piece.character==self.character
@@ -550,16 +550,19 @@ def sqs_not_under_attack?(all_pieces, new_location, board)
 end
 
   def checkmate(all_pieces, current_player, board)
+
     if self.in_check==true
+      self.calculate_moves(board)
       all_pieces.each do |piece|
+        if piece.colour!=self.colour
         piece.calculate_moves(board)
           piece.calculated_moves.each do |move|
             if self.calculated_moves.include? move
               self.calculated_moves.delete(move)
             end
           end
+        end
       end
-
       if self.calculated_moves.length==0
         return self.in_checkmate=true
       else
@@ -570,11 +573,7 @@ end
     end
   end
 
-
-
-
-
-def check?(all_pieces, current_player, board)
+  def check?(all_pieces, current_player, board)
   if current_player.colour=="White"
     all_pieces.each do |piece|
       if piece.colour =="Black"
@@ -603,8 +602,6 @@ def check?(all_pieces, current_player, board)
     end
   end
 end
-
-
 end
 
 class Pawn<Pieces
